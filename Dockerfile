@@ -72,7 +72,7 @@ COPY . .
 RUN make build
 
 # Next image - Copy built Go binary into new workspace
-FROM alpine
+FROM scratch
 
 #RUN apk --no-cache 
 
