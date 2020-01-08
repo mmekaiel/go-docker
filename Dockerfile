@@ -1,11 +1,11 @@
 # sudo docker build -t go-docker:1.0 .
     # sudo docker images
 # Run docker image in interactive mode - will die when ctrl+c
-    # sudo docker run -it -p 8080:8081 go-docker h
+    # sudo docker run --name go-docker -it -p 8080:8081 go-docker h
 # Run docker image in detached mode - will constantly run
-    # sudo docker run -d -p 8080:8081 go-docker 
+    # sudo docker run --name go-docker -d -p 8080:8081 go-docker
 # Push a new tag to docker repository
-    # sudo docker push mmekaiel/go-docker:tagname
+    # sudo docker push mmekaiel/go-docker:1.0.1
 
 
 
@@ -52,16 +52,31 @@
 
 
 
-FROM golang:1.12.0-alpine3.9 AS builder
+#FROM golang:1.12.0-alpine3.9 AS builder
+FROM golang:1.12-alpine AS builder
+
+# add git for go modules
+RUN rm -rf /var/cache/apk/* && \
+    rm -rf /tmp/*
+
+# add git for go modules
+RUN apk update && apk add --no-cache make git gcc 
 
 WORKDIR /temp
+COPY go.mod .
+
+RUN go mod download
+
 COPY . .
-RUN make
+
+RUN make build
 
 # Next image - Copy built Go binary into new workspace
 FROM alpine
 
+#RUN apk --no-cache 
+
 COPY --from=builder /temp/res /res
-COPY --from=builder /temp/go-docker /.
+COPY --from=builder /temp/go-docker /go-docker
 
 CMD [ "/go-docker" ,"--registry","--confdir=/res"]
