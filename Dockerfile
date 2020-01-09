@@ -1,58 +1,19 @@
-# sudo docker build -t go-docker:1.0 .
-    # sudo docker images
-# Run docker image in interactive mode - will die when ctrl+c
-    # sudo docker run --name go-docker -it -p 8080:8081 go-docker h
-# Run docker image in detached mode - will constantly run
-    # sudo docker run --name go-docker -d -p 8080:8081 go-docker
-# Push a new tag to docker repository
-    # sudo docker push mmekaiel/go-docker:1.0.1
+#
+# Copyright (c) 2019 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
-
-
-# FROM golang:1.12.0-alpine3.9
-
-# # Make an app directory
-# RUN mkdir /app
-
-# # Add all our project conents to the created app directory
-# ADD . /app
-
-# # Set the created app directory as our working directory
-# WORKDIR /app
-
-# RUN make build
-
-# CMD [ "/app/go-docker" ,"--registry","--confdir=/res"]
-
-
-
-
-
-# FROM golang:1.12.0-alpine3.9
-
-# # set the working directory
-# WORKDIR $GOPATH/src/github.com/hello
-
-# COPY . .
-
-# RUN make build
-
-# FROM scratch
-
-# ENV APP_PORT=49990
-# EXPOSE $APP_PORT
-
-# COPY --from=builder /github.com/hello/res /res
-# COPY --from=builder /github.com/hello /.
-
-# ENTRYPOINT ["/main","--registry","--confdir=/res"]
-
-
-
-
-
-
-#FROM golang:1.12.0-alpine3.9 AS builder
 FROM golang:1.12-alpine AS builder
 
 # add git for go modules
@@ -67,16 +28,19 @@ COPY go.mod .
 
 RUN go mod download
 
-COPY . .
+# COPY Dockerfile .
+COPY ./res ./res
+COPY main.go .
+COPY Makefile .
 
 RUN make build
 
 # Next image - Copy built Go binary into new workspace
-FROM scratch
+FROM alpine
 
-#RUN apk --no-cache 
-
+# Copy statically linked binary
 COPY --from=builder /temp/res /res
 COPY --from=builder /temp/go-docker /go-docker
 
+# Notice "CMD", we don't use "Entrypoint" because there is no OS
 CMD [ "/go-docker" ,"--registry","--confdir=/res"]

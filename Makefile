@@ -1,8 +1,5 @@
-#.PHONY: build clean
-
 # Application paths
 	BUILDPATH=$(CURDIR)
-	#APP_SERVICES=.
 
 # Go parameters
 	GO=CGO_ENABLED=1 GO111MODULE=on go
@@ -15,11 +12,9 @@
 
 	MAIN=main.go
 	EXENAME=go-docker
-	##@if [ ! -d $(BUILDPATH)/pkg ] ; then mkdir -p $(BUILDPATH)/pkg ; fi
-
-#.PHONY: build $(APP_SERVICES)
 
 build: 
+	@echo "building"
 	$(GOBUILD)
 
 hello:
@@ -36,6 +31,7 @@ clean:
 	@rm -f $(BUILDPATH)/main
 
 run: 
+	@echo "running"
 	$(GO) run $(MAIN) 
 	
 docker:
@@ -43,14 +39,5 @@ docker:
 		-f ./Dockerfile \
 		-t mmekaiel/go-docker:1.0.1 \
 		.
-
-# docker:
-# 	docker build \
-# 	    --build-arg http_proxy \
-# 	    --build-arg https_proxy \
-# 			-f ./Dockerfile \
-# 			--label "git_sha=$(GIT_SHA)" \
-# 			-t mmekaiel/go-docker:1.0.1 \
-# 			.
 
 all: hello build
